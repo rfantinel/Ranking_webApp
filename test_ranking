@@ -1,0 +1,152 @@
+import numpy as np
+import matplotlib.pyplot as plt  
+from matplotlib import cm
+
+
+# Funzione per calcolare la probabilità di vittoria del team A
+def prob_win(score_A, score_B):
+    return 1 / (1 + np.exp(-(score_A - score_B)))
+
+# Funzione per aggiornare la distribuzione di un giocatore
+def update_ranking(mu_prior, sigma_prior, outcome, individual_contribution, sigma_D):
+    # Calcola il fattore di guadagno
+    K = sigma_prior**2 / (sigma_prior**2 + sigma_D**2)
+    
+    # Calcola il punteggio di riferimento R per il singolo giocatore
+    R = individual_contribution
+       
+    # Aggiorna la media a posteriori
+    mu_post = mu_prior + K * R
+    
+    # Aggiorna la varianza a posteriori
+    sigma_post = sigma_prior * np.sqrt(1 - K)
+    
+    return mu_post, sigma_post
+
+
+def add_game(players, team_A, team_B, outcome, lambda_penalty=900, sigma_D=400, win_contrib=100):
+    # Parametri iniziali
+    # lambda_penalty : Penalità per numero di giocatori
+    # sigma_D : Varianza della differenza di punteggio
+    score_A = sum(players[player]['mu'] for player in team_A) - lambda_penalty * len(team_A)
+    score_B = sum(players[player]['mu'] for player in team_B) - lambda_penalty * len(team_B)
+
+    score_diff = abs(score_A - score_B)
+
+    mu_A = []
+    for player in team_A:
+        mu_A.append(players[player]['mu'])
+    mu_A = np.mean(np.array(mu_A))
+    mu_B = []
+    for player in team_B:
+        mu_B.append(players[player]['mu'])
+    mu_B = np.mean(np.array(mu_B))
+
+    mu_X = (mu_A+mu_B)/2
+
+    # Aggiornamento dei ranking per ogni giocatore
+    for player in team_A+team_B:
+        mu_prior = players[player]['mu']
+        sigma_prior = players[player]['sigma']
+        
+        # Contributo individuale del giocatore alla differenza di punteggio
+        if player in team_A:
+            if outcome == 1:
+                individual_contribution = (3*score_diff - 0*(mu_A - players[player]['mu']) + (mu_X - players[player]['mu'])) + win_contrib
+            else:
+                individual_contribution = (-3*score_diff + 0*(mu_A - players[player]['mu']) - (mu_X - players[player]['mu'])) - win_contrib
+          
+        else:
+            if outcome == 0:
+                individual_contribution = (3*score_diff - 0*(mu_B - players[player]['mu']) + (mu_X - players[player]['mu'])) + win_contrib
+            else:
+                individual_contribution = (-3*score_diff + 0*(mu_B - players[player]['mu']) - (mu_X - players[player]['mu'])) - win_contrib    
+        
+        
+        mu_post, sigma_post = update_ranking(mu_prior, sigma_prior, outcome, individual_contribution, sigma_D)
+        
+        players[player]['mu'] = mu_post
+        players[player]['sigma'] = sigma_post
+
+
+def main():
+
+    # Esempio di ranking iniziale dei giocatori (media e deviazione standard)
+    players = {
+        'riccardo': {'idx':0, 'mu': 1000, 'sigma': 100, 'ranking_mu':[], 'ranking_sigma':[], 'n_game': []},
+        'pietro': {'idx': 1, 'mu': 1000, 'sigma': 100, 'ranking_mu':[], 'ranking_sigma':[], 'n_game': []},
+        'luca': {'idx':2, 'mu': 1000, 'sigma': 100, 'ranking_mu':[], 'ranking_sigma':[], 'n_game': []},
+        'davide': {'idx': 3, 'mu': 1000, 'sigma': 100, 'ranking_mu':[], 'ranking_sigma':[], 'n_game': []},
+        'sara': {'idx': 3, 'mu': 1000, 'sigma': 100, 'ranking_mu':[], 'ranking_sigma':[], 'n_game': []},
+    }
+
+    games = [
+        {'team_A':['luca', 'davide'], 'team_B':['riccardo', 'pietro'], 'winner':'B'},
+        {'team_A':['luca', 'davide'], 'team_B':['riccardo', 'pietro'], 'winner':'B'},
+        {'team_A':['luca', 'davide'], 'team_B':['riccardo', 'pietro'], 'winner':'B'},
+        {'team_A':['luca', 'pietro'], 'team_B':['riccardo', 'davide'], 'winner':'B'},
+        {'team_A':['pietro', 'davide'], 'team_B':['riccardo', 'luca'], 'winner':'B'},
+        {'team_A':['pietro', 'luca'], 'team_B':['riccardo', 'davide'], 'winner':'A'},
+        {'team_A':['pietro', 'davide'], 'team_B':['riccardo', 'luca'], 'winner':'B'},
+        {'team_A':['pietro', 'luca'], 'team_B':['riccardo', 'davide'], 'winner':'B'},
+        {'team_A':['pietro', 'davide'], 'team_B':['riccardo', 'luca'], 'winner':'B'},
+        {'team_A':['davide', 'luca'], 'team_B':['riccardo', 'pietro'], 'winner':'B'},
+        {'team_A':['luca', 'pietro'], 'team_B':['riccardo', 'davide'], 'winner':'A'},
+        {'team_A':['pietro', 'davide'], 'team_B':['riccardo', 'luca'], 'winner':'B'},
+        {'team_A':['davide', 'luca'], 'team_B':['riccardo', 'pietro'], 'winner':'A'},
+        {'team_A':['luca', 'pietro'], 'team_B':['riccardo', 'davide'], 'winner':'A'},
+        {'team_A':['pietro', 'davide'], 'team_B':['riccardo', 'luca'], 'winner':'B'},
+        {'team_A':['davide', 'luca'], 'team_B':['riccardo', 'pietro'], 'winner':'B'},
+        {'team_A':['luca', 'pietro'], 'team_B':['riccardo', 'davide'], 'winner':'B'},
+        {'team_A':['pietro', 'davide'], 'team_B':['riccardo', 'luca'], 'winner':'A'},
+        {'team_A':['davide', 'luca'], 'team_B':['riccardo', 'pietro'], 'winner':'A'},
+        {'team_A':['luca', 'pietro'], 'team_B':['riccardo', 'davide'], 'winner':'B'},  
+
+
+        # {'team_A':['luca', 'davide'], 'team_B':['riccardo', 'pietro'], 'winner':'A'},
+        # {'team_A':['luca', 'davide'], 'team_B':['riccardo', 'pietro'], 'winner':'A'},
+    ]
+
+
+    for n_game, game in enumerate(games):
+        if n_game==17:
+            aaa = 0
+        outcome = 1
+        if game['winner']=='B':
+            outcome = 0
+        add_game(players, game['team_A'], game['team_B'], outcome)
+
+        for p in game['team_A']+game['team_B']:
+            players[p]['ranking_mu'].append(players[p]['mu'])
+            players[p]['ranking_sigma'].append(players[p]['sigma'])
+            players[p]['n_game'].append(n_game)
+
+
+    cmap = cm.viridis(np.arange(0, 255, step=int(256/len(list(players)))))  # Scegli una colormap (esempio: viridis)
+
+    for p in players:
+        idx = np.array(players[p]['idx'])
+        mean = np.array(players[p]['ranking_mu'])
+        std_dev = np.array(players[p]['ranking_sigma'])
+        n_game = np.array(players[p]['n_game'])
+
+        upper_bound = mean + 0.5*std_dev
+        lower_bound = mean - 0.5*std_dev
+
+        # Riempie l'area corrispondente a ±1 deviazione standard dalla media
+        plt.fill_between(n_game, lower_bound, upper_bound, color=cmap[idx, :], alpha=0.3)
+
+        if n_game.shape[0]==1:
+            plt.scatter(n_game, mean, label=p, color=cmap[idx, :],)
+        else:
+            plt.plot(n_game, mean, label=p, color=cmap[idx, :], marker='o')
+    
+    plt.legend()
+    plt.show()
+
+if __name__== '__main__':
+    main()
+
+
+
+
