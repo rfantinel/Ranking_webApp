@@ -1,21 +1,5 @@
 import streamlit as st
 import numpy as np
-import subprocess
-import sys
-
-
-def install_package(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    install_package('matplotlib')
-    import matplotlib.pyplot as plt
-
-
-
-
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
