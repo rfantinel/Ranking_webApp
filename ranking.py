@@ -8,7 +8,12 @@ class Ranking():
         self.n_game = self.compute_n_games_playes()
 
     def compute_n_games_playes(self):
-        return len(self.players[list(self.players)[0]].games)-1
+        
+        try:
+            l = len(self.players[list(self.players)[0]].games)-1
+        except:
+            l = 0
+        return l
 
 
     def recompute_all_ranking(self):
@@ -17,6 +22,9 @@ class Ranking():
         n_game_max = 0
         for name in players2:
             self.players[name].games = []
+            if type(players2[name].n_game)==int:
+                players2[name].n_game = [players2[name].n_game]
+
             if len(players2[name].n_game) >0:
                 if n_game_max<players2[name].n_game[-1]:
                     n_game_max = players2[name].n_game[-1]
@@ -86,7 +94,8 @@ class Ranking():
         for player in unassigned_players:
             self.players[player].games.append(None)
        
-        score_diff = abs(score_A - score_B)
+        # score_diff = score_A - score_B
+        score_diff = mu_A - mu_B
         mu_X = (mu_A+mu_B)/2
 
         # Aggiornamento dei ranking per ogni giocatore
@@ -96,10 +105,14 @@ class Ranking():
             
             # Contributo individuale del giocatore alla differenza di punteggio
             if player in team_A:
-                individual_contribution = (3*score_diff - 0*(mu_A - self.players[player].mu) + (mu_X - self.players[player].mu)) + win_contrib
+                # individual_contribution = 2*(-2*score_diff - 0.5(self.players[player].mu-mu_X) ) + win_contrib
+                individual_contribution = win_contrib - 0.5*score_diff - 10*len(team_A)
+               
+
             else:
-                individual_contribution = (-3*score_diff + 0*(mu_B - self.players[player].mu) - (mu_X - self.players[player].mu)) - win_contrib    
-            
+                # individual_contribution = 2*(2*score_diff - 0.5(self.players[player].mu-mu_X) ) - win_contrib                
+                individual_contribution =  -win_contrib + 0.5*score_diff + 10*len(team_B)
+ 
             
             mu_post, sigma_post = self.update_ranking(mu_prior, sigma_prior, individual_contribution, sigma_D)
             
@@ -110,3 +123,5 @@ class Ranking():
             self.players[player].ranking_sigma.append(sigma_post)
 
         self.n_game += 1
+
+

@@ -46,6 +46,8 @@ class MainPage():
             cmap = cm.viridis(np.arange(0, 255, step=int(256/len(list(st.session_state.players_dict)))))  # Scegli una colormap (esempio: viridis)
 
             for name in st.session_state.players_dict:
+                if type(st.session_state.players_dict[name].n_game)==int:
+                    st.session_state.players_dict[name].n_game = [st.session_state.players_dict[name].n_game]
                 if len(st.session_state.players_dict[name].n_game)>0:
                     idx = np.array(st.session_state.players_dict[name].idx)
                     n_game = np.array(st.session_state.players_dict[name].n_game)
