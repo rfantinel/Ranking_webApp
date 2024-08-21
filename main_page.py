@@ -86,8 +86,8 @@ class MainPage():
             fig, ax = plt.subplots(figsize=(12, 6))
             
             if len(list(st.session_state.players_dict))<=12:
-                # cmap = cm.get_cmap('Set1', 10).colors
-                cmap = cm.get_cmap('tab10', 10).colors
+                cmap = cm.get_cmap('Set1', 10).colors
+                # cmap = cm.get_cmap('tab10', 10).colors
             elif len(list(st.session_state.players_dict))>12:
                 cmap = cm.get_cmap('tab20', 20).colors
             elif len(list(st.session_state.players_dict))>20:
