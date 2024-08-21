@@ -17,39 +17,39 @@ class NewPlayerPage():
 
         st.title('Add Player')
 
-        
-        input_name = st.text_input("*name:")
-        input_surname = st.text_input("surname:")
+        if st.session_state.user_level ==2: 
+            input_name = st.text_input("*name:")
+            input_surname = st.text_input("surname:")
 
 
-        if input_name:
-            st.write("name updated")
-        else:
-            st.write("*Please insert the name of the new player")
+            if input_name:
+                st.write("name updated")
+            else:
+                st.write("*Please insert the name of the new player")
 
-        if input_surname:
-            st.write(f"surname updated")
+            if input_surname:
+                st.write(f"surname updated")
 
-        if st.button("Add Player"):
-            if input_name!='' and input_surname!='':
-                new_player = Player( len(list(st.session_state.players_dict)), input_name, input_surname)
-                if not new_player.complete_name in st.session_state.players_dict:
-                    st.session_state.players_dict[new_player.complete_name] = new_player
-                else:
-                    idx = 1
-                    new_player = Player( len(list(st.session_state.players_dict)), input_name, input_surname + ' ' + str(idx))
-                    while new_player.complete_name in st.session_state.players_dict:
-                        idx += 1
+            if st.button("Add Player"):
+                if input_name!='' and input_surname!='':
+                    new_player = Player( len(list(st.session_state.players_dict)), input_name, input_surname)
+                    if not new_player.complete_name in st.session_state.players_dict:
+                        st.session_state.players_dict[new_player.complete_name] = new_player
+                    else:
+                        idx = 1
                         new_player = Player( len(list(st.session_state.players_dict)), input_name, input_surname + ' ' + str(idx))
-                    st.session_state.players_dict[new_player.complete_name] = new_player
+                        while new_player.complete_name in st.session_state.players_dict:
+                            idx += 1
+                            new_player = Player( len(list(st.session_state.players_dict)), input_name, input_surname + ' ' + str(idx))
+                        st.session_state.players_dict[new_player.complete_name] = new_player
+                        
+                    st.session_state.data[new_player.complete_name] = new_player.__dict__
+                    # Salva il dizionario in un file JSON
+                    with open(st.session_state.players_dict_file, 'w') as file:
+                        json.dump(st.session_state.data, file, indent=4)
                     
-                st.session_state.data[new_player.complete_name] = new_player.__dict__
-                # Salva il dizionario in un file JSON
-                with open(st.session_state.players_dict_file, 'w') as file:
-                    json.dump(st.session_state.data, file, indent=4)
-                
 
-                st.write('player "'+ str(new_player.complete_name), '" added to players list')
+                    st.write('player "'+ str(new_player.complete_name), '" added to players list')
 
 
 

@@ -13,6 +13,7 @@ from games import Games
 from main_page import MainPage
 from new_player_page import NewPlayerPage
 from new_game_page import NewGamePage
+from user_level_setting_page import UserLevelSettingPage
 from ranking import Ranking
 
 
@@ -60,9 +61,14 @@ def main():
     if 'ranking' not in st.session_state:
         st.session_state.ranking = Ranking(players=st.session_state.players_dict)
 
+    if 'user_level' not in st.session_state:
+            st.session_state.user_level = 1
+
+
+    user_level_settings = UserLevelSettingPage()
     new_player_pg_obj = NewPlayerPage()
     new_game_pg_obj = NewGamePage()
-    main_pg_obj = MainPage(new_game_pg_obj, new_player_pg_obj)
+    main_pg_obj = MainPage(new_game_pg_obj, new_player_pg_obj, user_level_settings)
 
 
  
@@ -71,6 +77,5 @@ def main():
 # Avvio dell'app
 if __name__ == '__main__':
     main()
-
 
 
