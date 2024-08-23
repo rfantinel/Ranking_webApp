@@ -85,6 +85,18 @@ class NewGamePage():
        
         df = pd.DataFrame(data)
 
+        if df.index._values[0] < df.index._values[-1]:
+            df_reversed = df.reindex(index=df.index[::-1]).reset_index(drop=True)
+            old_row = df.index._values.tolist()
+            row_name = []    
+            for i, row_idx in enumerate(df.index._values.tolist()):
+                row_name.append(str(old_row[len(old_row)-i-1] + 1))
+
+            df = df_reversed.set_axis(row_name, axis=0)
+      
+            
+        
+
         if st.session_state.user_level ==2: 
             # Seleziona la riga da rimuovere
             rm_idx = st.text_input('remove row n:')
@@ -97,47 +109,49 @@ class NewGamePage():
                 rm_idx_s1 = rm_idx_s[0]
                 if len(rm_idx_s)>1:
                     rm_idx_s1 = rm_idx_s[1]
-                    
-                if int(rm_idx_s1) >= int(rm_idx_s0):  
+
+                rm_idx_s0 = int(rm_idx_s0)
+                rm_idx_s1 = int(rm_idx_s1)
             
-                    for rm_idx in np.arange(int(rm_idx_s1), int(rm_idx_s0)-0.1, step=-1):
-                        rm_idx = int(rm_idx)
-                        if rm_idx >= 0 and rm_idx < len(df):
-                            df = df.drop(index=rm_idx)
+                for rm_idx in np.arange(rm_idx_s1, rm_idx_s0-0.1, step=-1):
+                    rm_idx = int(rm_idx)
+                    if rm_idx > 0 and rm_idx <= len(df):
+                        df = df.drop(str(rm_idx))
+
+                        index_to_be_removed = rm_idx-1
+                        
+                        for name in st.session_state.players_dict:
+                            try:
+                                st.session_state.players_dict[name].games.pop(index_to_be_removed)
+                            except:
+                                aaaa = 0    
+                            st.session_state.players_dict[name].mu = 1000
+                            st.session_state.players_dict[name].sigma = 100
+                            st.session_state.players_dict[name].ranking_mu = []
+                            st.session_state.players_dict[name].ranking_sigma = []
+                            rm_idx_2 = np.argwhere(np.array(st.session_state.players_dict[name].n_game)==index_to_be_removed)
+                            if rm_idx_2.shape[0]>0:
+                                st.session_state.players_dict[name].n_game.pop(rm_idx_2[0][0])
+                                for j in np.arange(rm_idx_2[0][0], len(st.session_state.players_dict[name].n_game)):
+                                    st.session_state.players_dict[name].n_game[j] -=1
                             
-                            for name in st.session_state.players_dict:
-                                try:
-                                    st.session_state.players_dict[name].games.pop(rm_idx)
-                                except:
-                                    aaaa = 0    
-                                st.session_state.players_dict[name].mu = 1000
-                                st.session_state.players_dict[name].sigma = 100
-                                st.session_state.players_dict[name].ranking_mu = []
-                                st.session_state.players_dict[name].ranking_sigma = []
-                                rm_idx_2 = np.argwhere(np.array(st.session_state.players_dict[name].n_game)==rm_idx)
-                                if rm_idx_2.shape[0]>0:
-                                    # st.session_state.players_dict[name].n_game = st.session_state.players_dict[name].n_game[0:rm_idx_2[0][0]]+st.session_state.players_dict[name].n_game[rm_idx_2[0][0]+1:]
-                                    st.session_state.players_dict[name].n_game.pop(rm_idx_2[0][0])
-                                    for j in np.arange(rm_idx_2[0][0], len(st.session_state.players_dict[name].n_game)):
-                                        st.session_state.players_dict[name].n_game[j] -=1
-                                
-                            new_ranking = st.session_state.ranking.recompute_all_ranking()
-                            
-                            for name in st.session_state.players_dict:
-                                st.session_state.data[st.session_state.players_dict[name].complete_name] = st.session_state.players_dict[name].__dict__
+                        new_ranking = st.session_state.ranking.recompute_all_ranking()
+                        
+                        for name in st.session_state.players_dict:
+                            st.session_state.data[st.session_state.players_dict[name].complete_name] = st.session_state.players_dict[name].__dict__
 
-                            st.session_state.ranking.n_game -= 1
+                        st.session_state.ranking.n_game -= 1
 
-                            # Salva il dizionario in un file JSON
-                            with open(st.session_state.players_dict_file, 'w') as file:
-                                json.dump(st.session_state.data, file, indent=4)
+                        # Salva il dizionario in un file JSON
+                        with open(st.session_state.players_dict_file, 'w') as file:
+                            json.dump(st.session_state.data, file, indent=4)
 
-                            st.success(f'Row {rm_idx} removed successfully!')
+                        st.success(f'Row {rm_idx} removed successfully!')
 
 
 
-                        else:
-                            st.warning(f'Row {rm_idx} not valid.')
+                    else:
+                        st.warning(f'Row {rm_idx} not valid.')
 
                 data = {}
                 n_rows = 0
@@ -154,5 +168,20 @@ class NewGamePage():
                 
             
                 df = pd.DataFrame(data)
+
+                if df.index._values[0] < df.index._values[-1]:
+                    df_reversed = df.reindex(index=df.index[::-1]).reset_index(drop=True)
+                    old_row = df.index._values.tolist()
+                    row_name = []    
+                    for i, row_idx in enumerate(df.index._values.tolist()):
+                        row_name.append(str(old_row[len(old_row)-i-1] + 1))
+
+                    df = df_reversed.set_axis(row_name, axis=0)
+               
+
             # Aggiorna la tabella dopo la rimozione
-        table = st.table(df)
+
+        
+        st.dataframe(df, height=250, use_container_width=True)
+
+        

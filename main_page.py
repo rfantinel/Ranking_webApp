@@ -108,11 +108,11 @@ class MainPage():
                     lower_bound = mu - 0.5*sigma
                     # st.line_chart(ranking_chart)
                     # Creare il grafico
-                    ax.fill_between(n_game, lower_bound, upper_bound, color=cmap[idx, :], alpha=0.2)
+                    ax.fill_between(n_game+1, lower_bound, upper_bound, color=cmap[idx, :], alpha=0.2)
                     if n_game.shape[0]==1:
-                        ax.scatter(n_game, mu, label=name, color=cmap[idx, :],)
+                        ax.scatter(n_game+1, mu, label=name, color=cmap[idx, :],)
                     else:
-                        ax.plot(n_game, mu, label=name, color=cmap[idx, :], marker='o')
+                        ax.plot(n_game+1, mu, label=name, color=cmap[idx, :], marker='o')
             
                     ax.set_xlabel('N game')
                     ax.set_ylabel('Ranking')
