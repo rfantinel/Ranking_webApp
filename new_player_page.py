@@ -47,6 +47,7 @@ class NewPlayerPage():
                         while new_player.complete_name in st.session_state.players_dict:
                             idx += 1
                             new_player = Player( len(list(st.session_state.players_dict)), input_name, input_surname + ' ' + str(idx))
+                            
                         st.session_state.players_dict[new_player.complete_name] = new_player
                         
                     st.session_state.data[new_player.complete_name] = new_player.__dict__
@@ -59,8 +60,12 @@ class NewPlayerPage():
 
 
 
+            inv_list = ["..."]
+            for i, i_list in enumerate(list(st.session_state.players_dict)):
+                inv_list.append(list(st.session_state.players_dict)[len(list(st.session_state.players_dict))-i-1])
             
-            selected_name = st.selectbox('Select player to remove:', list(st.session_state.players_dict))
+
+            selected_name = st.selectbox('Select player to remove:', inv_list)
             if st.button("Remove Player"):
                 if selected_name in list(st.session_state.players_dict):
 
@@ -82,23 +87,33 @@ class NewPlayerPage():
        
 
         data = {}
-        df_cols_name = ['Total games', 'Played games', 'Won', 'Lost', 'Best score', 'Score']
+        df_cols_name = ['Total games', 'Played games', 'Won', 'Lost', 'Won [%]', 'Lost [%]', 'Best score', 'Score']
         for name in st.session_state.players_dict:
-            try:
-                idx_last_played_game = find_last_not_none(st.session_state.players_dict[name].games)
-                N_played_game = int(count_not_none(st.session_state.players_dict[name].games))
 
-                games_lost = int(np.sum(1-np.array(st.session_state.players_dict[name].games)))
-                games_won = int(np.sum(np.array(st.session_state.players_dict[name].games)))
-                Tot_games = int(st.session_state.players_dict[name].n_game[-1])+1
+            idx_last_played_game = find_last_not_none(st.session_state.players_dict[name].games)
+            N_played_game = int(count_not_none(st.session_state.players_dict[name].games))
+
+            games_lost =  np.sum(np.array(st.session_state.players_dict[name].games)==0)
+            games_won =  np.sum(np.array(st.session_state.players_dict[name].games)==1)
+
+            Tot_games = len(st.session_state.players_dict[name].games)
+
+            if len(st.session_state.players_dict[name].n_game) > 0:    
                 last_played_game = st.session_state.players_dict[name].n_game[idx_last_played_game]
-                last_score = st.session_state.players_dict[name].mu
+            else:
+                Tot_games = 0
+                last_played_game = None
+                
+            last_score = st.session_state.players_dict[name].mu
+            best_score = last_score
+            if len(st.session_state.players_dict[name].n_game) > 0:
                 best_score = np.max(np.array(st.session_state.players_dict[name].ranking_mu))
-                data[name] = [Tot_games, N_played_game, games_won, games_lost, best_score, last_score]
-            except:
-                data[name] = [None, None, None, None, None, None]
+            
+            data[name] = [Tot_games, N_played_game, games_won, games_lost, games_won/N_played_game*100, games_lost/N_played_game*100,  best_score, last_score]
+           
 
         df = pd.DataFrame(data).transpose()
         df = df.set_axis(df_cols_name, axis=1)
+        df_sorted = df.sort_values(by=df_cols_name[-1], ascending=False)
 
-        table = st.table(df)
+        table = st.table(df_sorted)

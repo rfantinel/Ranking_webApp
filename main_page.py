@@ -29,21 +29,21 @@ class MainPage():
             self.page_user_level_settings.main_page = self
             self.page_user_level_settings.show()
 
-            if st.button("Torna alla Pagina Principale"):
+            if st.button("Go to Homepage"):
                 navigate_to(self.page_name)
 
         elif st.session_state['page'] == self.page_add_player.page_name:
             self.page_add_player.main_page = self
             self.page_add_player.show()
 
-            if st.button("Torna alla Pagina Principale"):
+            if st.button("Go to Homepage"):
                 navigate_to(self.page_name)
 
         elif st.session_state['page'] == self.page_add_game.page_name:
             self.page_add_game.main_page = self
             self.page_add_game.show()
 
-            if st.button("Torna alla Pagina Principale"):
+            if st.button("Go to Homepage"):
                 navigate_to(self.page_name)
                 
     def show_settings_icon(self):

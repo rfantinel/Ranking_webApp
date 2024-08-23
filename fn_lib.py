@@ -17,11 +17,12 @@ def navigate_to(page):
     st.rerun()
 
 def find_last_not_none(lst):
-    # Iterate over the list in reverse
-    for item in reversed(lst):
+    count = 0
+    for i, item in enumerate(lst):
         if item is not None:
-            return item
-    return None  # Return None if all elements are None
+            count = i
+    return count
+
 
 def count_not_none(lst):
     count = 0
