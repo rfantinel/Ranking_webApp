@@ -116,4 +116,6 @@ class NewPlayerPage():
         df = df.set_axis(df_cols_name, axis=1)
         df_sorted = df.sort_values(by=df_cols_name[-1], ascending=False)
 
-        table = st.table(df_sorted)
+
+        st.dataframe(df_sorted, height=250, use_container_width=True)
+
